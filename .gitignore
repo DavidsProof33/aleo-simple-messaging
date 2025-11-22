@@ -1,0 +1,71 @@
+# === Leo build artefaktok ===
+leo/*/build/
+leo/*/output/
+**/program.json
+**/proving_key.json
+**/verifying_key.json
+**/records.json
+
+# Leo cache
+.leo/
+.cache/
+.tmp/
+
+# === Rust build ===
+rust/*/target/
+target/
+Cargo.lock
+
+# Rust tools
+.rustup/
+.cargo/
+
+# === Environment files ===
+.env
+.env.local
+.env.*.local
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.iml
+
+# VSCode workspace
+*.code-workspace
+
+# === OS specific ===
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.Trash-*
+.nfs*
+
+# === Logs ===
+*.log
+logs/
+log/
+
+# === Temporary files ===
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# === Backups ===
+*.old
+*.orig
+
+# === Other noise ===
+node_modules/
+dist/
+build/

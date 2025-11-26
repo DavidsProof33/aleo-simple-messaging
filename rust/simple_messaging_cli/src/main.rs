@@ -2,90 +2,91 @@ use clap::Parser;
 use num_bigint::BigUint;
 use std::process::Command;
 
-/// Egyszerű CLI a `simple_messaging.aleo` Leo program `send_message` transitionjéhez.
+/// Simple CLI for the `send_message` transition of the `simple_messaging.aleo` Leo program.
 ///
-/// Nem csinál kriptót, nem hív közvetlen snarkVM-et,
-/// csak egy biztonságos "wrapper":
-///   - összegyúrja a paramétereket
-///   - megmutatja, milyen `leo execute` parancsot futtatna
-///   - opcionálisan tényleg meghívja a Leo CLI-t (`--run`).
+/// It does *not* perform any cryptography and does *not* call snarkVM directly.
+/// It is only a safe wrapper that:
+///   - collects the parameters,
+///   - shows which `leo execute` command it would run,
+///   - and optionally actually executes the Leo CLI (`--run`).
 #[derive(Parser, Debug)]
 #[command(
     name = "simple_messaging_cli",
     version,
-    about = "Rust CLI wrapper a 'simple_messaging.aleo' send_message transitionjéhez",
+    about = "Rust CLI wrapper for the 'simple_messaging.aleo' send_message transition",
     long_about = None
 )]
 struct Args {
-    /// Feladó Aleo címe (sender)
+    /// Sender Aleo address
     #[arg(long)]
     sender: String,
 
-    /// Címzett Aleo címe (recipient / owner)
+    /// Recipient Aleo address (record owner)
     #[arg(long)]
     recipient: String,
 
-    /// Üzenet azonosító (Leo field literal, pl. 1field)
+    /// Message identifier (Leo field literal, e.g. 1field)
     #[arg(long, default_value = "1field")]
     msg_id: String,
 
-    /// Üzenet adat 0. (Leo field literal, ha nincs message, akkor ezt használjuk)
+    /// Message data 0 (Leo field literal; if no `message` is given, this is used)
     #[arg(long, default_value = "0field")]
     data0: String,
 
-    /// Üzenet adat 1. (Leo field literal)
+    /// Message data 1 (Leo field literal)
     #[arg(long, default_value = "0field")]
     data1: String,
 
-    /// Üzenet adat 2. (Leo field literal)
+    /// Message data 2 (Leo field literal)
     #[arg(long, default_value = "0field")]
     data2: String,
 
-    /// Teljes üzenet szövegben. Ha megadod, ezt automatán feldaraboljuk 3 fieldre.
+    /// Full message as UTF-8 text.  
+    /// If provided, it is automatically split into 3 fields.
     ///
-    /// Max. ~93 byte-ot használunk fel (3 × 31 byte). Ha hosszabb, levágjuk.
+    /// We use up to ~93 bytes (3 × 31 bytes). Longer input will be truncated.
     #[arg(long)]
     message: Option<String>,
 
-    /// Aleo private key, amivel a tranzakciót aláírod
+    /// Aleo private key used to sign the transaction
     #[arg(long)]
     private_key: String,
 
-    /// Hálózat (testnet, devnet, stb. – a Leo CLI-vel legyen konzisztens)
+    /// Network (testnet, devnet, etc. – must match the Leo CLI configuration)
     #[arg(long, default_value = "testnet")]
     network: String,
 
-    /// Endpoint az Aleo node / explorer API-hoz.
+    /// Endpoint for the Aleo node / explorer API.
     ///
-    /// Ha nincs megadva, a Leo CLI az ENDPOINT env változóból dolgozik
-    /// (vagy a saját defaultjaiból).
+    /// If not provided, the Leo CLI uses the ENDPOINT env variable
+    /// (or its own defaults).
     #[arg(long)]
     endpoint: Option<String>,
 
-    /// Ha megadod, a program NEM csak kiírja a parancsot, hanem tényleg futtatja is.
+    /// If set, the program WILL run the Leo command instead of just printing it.
     ///
-    /// Alapértelmezetten csak "dry-run" történik, hogy biztonságos legyen.
+    /// By default we only perform a dry-run for safety.
     #[arg(long)]
     run: bool,
 }
 
-/// Szövegből (≤31 byte) decimális field literált csinál:
+/// Convert a byte slice (≤31 bytes) into a decimal field literal:
 ///  - bytes → BigUint (little-endian),
-///  - BigUint → decimális string,
+///  - BigUint → decimal string,
 ///  - "{dec}field"
 fn bytes_to_field_decimal_literal(src: &[u8]) -> String {
     if src.is_empty() {
         return "0field".to_string();
     }
-    // max 31 byte-ot használunk egy fieldre
+    // we use at most 31 bytes for a single field
     let max = 31;
     let truncated = if src.len() > max { &src[..max] } else { src };
     let n = BigUint::from_bytes_le(truncated);
     format!("{}field", n.to_string())
 }
 
-/// Szöveget (UTF-8) 3 darab decimális field literálra bont.
-/// Összesen max. 93 byte-ot használ (3 × 31).
+/// Split a UTF-8 string into 3 decimal field literals.
+/// Uses at most 93 bytes total (3 × 31).
 fn string_to_3_field_literals(msg: &str) -> (String, String, String) {
     let bytes = msg.as_bytes();
     let max_total = 93;
@@ -97,7 +98,7 @@ fn string_to_3_field_literals(msg: &str) -> (String, String, String) {
 
     if bytes.len() > max_total {
         eprintln!(
-            "⚠ Figyelem: az üzenet {} byte, levágva {} byte-ra (3 field).",
+            "⚠ Warning: message is {} bytes, truncated to {} bytes (3 fields).",
             bytes.len(),
             max_total
         );
@@ -127,7 +128,7 @@ fn string_to_3_field_literals(msg: &str) -> (String, String, String) {
 fn main() {
     let args = Args::parse();
 
-    // Döntés: nyers data0/1/2 legyen, vagy message-ből generált field-ek?
+    // Decide: use raw data0/1/2, or generate them from `message`?
     let (data0, data1, data2, used_message) = if let Some(ref msg) = args.message {
         let (f0, f1, f2) = string_to_3_field_literals(msg);
         (f0, f1, f2, true)
@@ -135,8 +136,8 @@ fn main() {
         (args.data0.clone(), args.data1.clone(), args.data2.clone(), false)
     };
 
-    // Összerakjuk a `leo execute` parancsot.
-    // Szintaxis Leo 3.x alatt:
+    // Build the `leo execute` command.
+    // Leo 3.x syntax:
     //   leo execute send_message <sender> <recipient> <msg_id> <data0> <data1> <data2> ...
     let mut cmd = Command::new("leo");
 
@@ -157,7 +158,7 @@ fn main() {
         cmd.arg("--endpoint").arg(endpoint);
     }
 
-    // Logolható, "emberi" parancssor (a privát kulcsot nem írjuk ki teljesen).
+    // Human-readable command for logging (private key is not printed in full).
     let printable = {
         let mut parts: Vec<String> = Vec::new();
         parts.push("leo".to_string());
@@ -172,7 +173,7 @@ fn main() {
         parts.push("--network".to_string());
         parts.push(args.network.clone());
         parts.push("--private-key".to_string());
-        parts.push("APrivateKey…".to_string()); // itt nem logoljuk ki fullban
+        parts.push("APrivateKey…".to_string()); // do not log the full private key
 
         if let Some(endpoint) = &args.endpoint {
             parts.push("--endpoint".to_string());
@@ -184,36 +185,38 @@ fn main() {
 
     println!("👋 simple_messaging_cli – Leo wrapper");
     println!("------------------------------------");
-    println!("Feladó (sender):   {}", args.sender);
-    println!("Címzett (owner):   {}", args.recipient);
-    println!("msg_id:            {}", args.msg_id);
+    println!("Sender:           {}", args.sender);
+    println!("Recipient (owner):{}", args.recipient);
+    println!("msg_id:           {}", args.msg_id);
     if used_message {
-        println!("Üzenet (message):  {}", args.message.as_deref().unwrap_or(""));
+        println!("Message (text):   {}", args.message.as_deref().unwrap_or(""));
     }
-    println!("data0:             {}", data0);
-    println!("data1:             {}", data1);
-    println!("data2:             {}", data2);
-    println!("Network:           {}", args.network);
+    println!("data0:            {}", data0);
+    println!("data1:            {}", data1);
+    println!("data2:            {}", data2);
+    println!("Network:          {}", args.network);
     if let Some(endpoint) = &args.endpoint {
-        println!("Endpoint:          {}", endpoint);
+        println!("Endpoint:         {}", endpoint);
     } else {
-        println!("Endpoint:          (Leo CLI default / ENDPOINT env)");
+        println!("Endpoint:         (Leo CLI default / ENDPOINT env)");
     }
     println!();
-    println!("💡 Leo parancs (private key rövidítve a logban):");
+    println!("💡 Leo command (private key shortened in log):");
     println!("  {}", printable);
     println!();
 
     if !args.run {
-        println!("ℹ Dry-run mód: a parancs NINCS lefuttatva. Adj hozzá `--run` flaget, ha tényleg futtatni szeretnéd.");
+        println!(
+            "ℹ Dry-run mode: the command is NOT executed. Add the `--run` flag if you really want to run it."
+        );
         return;
     }
 
-    println!("🚀 Futtatjuk a Leo CLI-t...");
+    println!("🚀 Running Leo CLI...");
 
     match cmd.output() {
         Ok(output) => {
-            println!("✅ A parancs lefutott. Exit code: {}", output.status);
+            println!("✅ Command finished. Exit code: {}", output.status);
 
             if !output.stdout.is_empty() {
                 println!("--- STDOUT ---");
@@ -226,8 +229,10 @@ fn main() {
             }
         }
         Err(err) => {
-            eprintln!("❌ Hiba a Leo CLI futtatása közben: {err}");
-            eprintln!("Ellenőrizd, hogy a `leo` parancs elérhető-e (PATH), és a working directory a Leo program gyökere-e.");
+            eprintln!("❌ Error while running Leo CLI: {err}");
+            eprintln!(
+                "Please check that the `leo` command is on PATH and the working directory is the Leo project root."
+            );
         }
     }
 }

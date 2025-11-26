@@ -1,19 +1,19 @@
 program simple_messaging.aleo {
 
-    // Egyszerű Message rekord – demo célra.
-    // Három tetszőleges field adatot tárol.
+    // Simple Message record – for demo purposes.
+    // Stores three arbitrary field values.
     record Message {
-        owner: address,   // a címzett, aki birtokolja a rekordot
-        sender: address,  // a feladó címe
-        msg_id: field,    // üzenet azonosító
-        data0: field,     // tetszőleges adat 1
-        data1: field,     // tetszőleges adat 2
-        data2: field,     // tetszőleges adat 3
+        owner: address,   // the recipient address (record owner)
+        sender: address,  // the sender address
+        msg_id: field,    // message identifier
+        data0: field,     // arbitrary data 1
+        data1: field,     // arbitrary data 2
+        data2: field,     // arbitrary data 3
     }
 
-    /// Egyszerű "üzenetküldés" demo:
-    /// - input: sender, recipient, msg_id + 3 field adat
-    /// - output: egy Message rekord
+    /// Simple "send message" demo:
+    /// - input: sender, recipient, msg_id + 3 field values
+    /// - output: a single Message record
     transition send_message(
         sender: address,
         recipient: address,

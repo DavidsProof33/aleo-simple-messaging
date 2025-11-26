@@ -66,7 +66,7 @@ Recommended setup:
 
 ```powershell
 cd C:\
-git clone https://github.com/YOUR-NAME/aleo-simple-messaging.git
+git clone https://github.com/DavidsProof33/aleo-simple-messaging.git
 cd .\aleo-simple-messaging\
 ```
 
@@ -249,10 +249,9 @@ Our goal is to offer a clean, structured, easy-to-understand example that demons
 
 ## 🔷 Related Documentation
 
-- `docs/architecture.md`  
-- `docs/message_format.md`  
-- `docs/contributing.md`  
-- `FAQ.md`  
+- [Architecture](docs/architecture.md)
+- [Message Format](docs/message_format.md)
+- [FAQ](FAQ.md)
 
 ---
 
@@ -263,16 +262,10 @@ Our goal is to offer a clean, structured, easy-to-understand example that demons
 
 ---
 
-## 🐞 Known Issues
+## 🔷 Known Issues
 
 - The project is currently tested offline only.  
 - devnet/testnet deployment is not included in the demo.  
 - Rust CLI uses basic input validation.  
 
 ---
-
-## ☑️ Recommended GitHub Topics
-
-```
-aleo, leo, rust, example, demo, blockchain, cryptography
-```

@@ -131,7 +131,7 @@ program simple_messaging.aleo {
 ### Building the Leo program (WSL)
 
 ```bash
-cd /mnt/c/aleo-simple-messaging/leo/simple_messaging
+cd /home/<user>/aleo-simple-messaging/leo/simple_messaging
 leo build
 ```
 
@@ -139,7 +139,7 @@ leo build
 
 ```powershell
 cd C:\aleo-simple-messaging
-wsl bash -lc "cd /mnt/c/aleo-simple-messaging/leo/simple_messaging && leo build"
+wsl bash -lc "cd /home/<user>/aleo-simple-messaging/leo/simple_messaging && leo build"
 ```
 
 ---
@@ -157,6 +157,7 @@ cargo build
 
 ```powershell
 cargo run -- `
+  --leo-dir "/home/<user>/aleo-simple-messaging/leo/simple_messaging" `
   --sender aleo1SENDER... `
   --recipient aleo1RECIPIENT... `
   --msg-id 1field `
@@ -164,13 +165,14 @@ cargo run -- `
   --data1 20field `
   --data2 30field `
   --private-key "APrivateKey1..." `
-  --network 1
+  --network testnet
 ```
 
 ### Actual Execution (`--run`)
 
 ```powershell
 cargo run -- `
+  --leo-dir "/home/<user>/aleo-simple-messaging/leo/simple_messaging" `
   --sender aleo1SENDER... `
   --recipient aleo1RECIPIENT... `
   --msg-id 1field `
@@ -178,7 +180,7 @@ cargo run -- `
   --data1 20field `
   --data2 30field `
   --private-key "APrivateKey1..." `
-  --network 1 `
+  --network testnet `
   --run
 ```
 
@@ -286,7 +288,25 @@ Our goal is to offer a clean, structured, easy-to-understand example that demons
 
 ---
 
+> ⚠️ **Network naming note**
+>
+> Different Aleo tools use different network identifiers:
+> - **Leo CLI** uses `--network testnet`
+> - **snarkos** uses a numeric id (e.g. `--network 1` for testnet)
+>
+> Mixing these identifiers (for example using `1` with Leo)
+> may result in failed or unconfirmed transactions.
+
 ### 🔷 4. Deploy (devnet / testnet)
+
+> ✅ **Note (deployment is one-time)**
+>
+> This Leo program only needs to be deployed **once per network** (and per program version).
+> If `simple_messaging.aleo` is already deployed on testnet, you can skip this section and go directly to:
+> - running `leo execute ... --broadcast` (to create records), and
+> - `snarkos developer scan` (to find your private records).
+>
+> You only need to deploy again if you modify the Leo program and want to publish a new version.
 
 > ⚠️ Never commit your private key or view key.
 
@@ -295,20 +315,20 @@ Our goal is to offer a clean, structured, easy-to-understand example that demons
 
 ### Deploy (WSL)
 ```bash
-cd /mnt/c/aleo-simple-messaging/leo/simple_messaging
+cd /home/<user>/aleo-simple-messaging/leo/simple_messaging
 leo build
 
 leo deploy \
   --private-key "$PRIVATE_KEY" \
-  --network 1 \
+  --network testnet \
   --endpoint https://api.explorer.provable.com/v1
 ```
 
 ### Deploy from PowerShell (through WSL)
 ```powershell
 cd C:\aleo-simple-messaging
-wsl bash -lc "cd /mnt/c/aleo-simple-messaging/leo/simple_messaging && leo build"
-wsl bash -lc "cd /mnt/c/aleo-simple-messaging/leo/simple_messaging && leo deploy --private-key `"$PRIVATE_KEY`" --network 1 --endpoint https://api.explorer.provable.com/v1"
+wsl bash -lc "cd /home/<user>/aleo-simple-messaging/leo/simple_messaging && leo build"
+wsl bash -lc "cd /home/<user>/aleo-simple-messaging/leo/simple_messaging && leo deploy --private-key `"$PRIVATE_KEY`" --network testnet --endpoint https://api.explorer.provable.com/v1"
 ```
 
 ---
@@ -330,8 +350,7 @@ Tip: start with a smaller range (e.g. `--last 200`) and increase if needed.
 
 ## 🔷 Known Issues
 
-- The project is currently tested offline only.  
-- devnet/testnet deployment is documented but not automated. 
-- Rust CLI uses basic input validation.  
+- On-chain workflows (deploy / execute / scan) are documented and have been tested manually, but are not fully automated.
+- Rust CLI uses basic input validation. 
 
 ---

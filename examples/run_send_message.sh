@@ -1,13 +1,20 @@
-#!/bin/bash
-# Example: Simple Leo execution for the simple_messaging demo
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Navigate to the Leo program directory
-cd "$(dirname "$0")/../leo/simple_messaging"
+# examples/run_send_message.sh
+# Simple example execution (local) from inside WSL.
 
-# Example execution (with test values)
-leo execute simple_messaging.aleo send_message \
-  aleo1sender... \
-  aleo1recipient... \
+# Go to the Leo program directory (WSL path)
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/../leo/simple_messaging"
+
+# Example values (replace with your own)
+SENDER="aleo1sender..."
+RECIPIENT="aleo1recipient..."
+
+leo execute send_message \
+  "$SENDER" \
+  "$RECIPIENT" \
   1field \
   10field \
   20field \

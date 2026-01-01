@@ -8,9 +8,10 @@ This document describes the structure of the `Message` record used in the Leo pr
 
 Defined in `main.leo`:
 
-```rust
+```leo
 record Message {
-    owner: address,
+    owner: address,   // record owner (recipient)
+    sender: address,  // sender address
     msg_id: field,
     data0: field,
     data1: field,
@@ -23,6 +24,7 @@ record Message {
 | Field  | Type    | Description                           |
 |--------|---------|---------------------------------------|
 | owner  | address | The owner of the private record       |
+| sender | address | The sender address                    |
 | msg_id | field   | A message identifier                  |
 | data0  | field   | Arbitrary field value                 |
 | data1  | field   | Arbitrary field value                 |
@@ -36,7 +38,7 @@ This structure is intentionally minimal and educational.
 
 The Rust CLI invokes:
 
-```
+```leo
 send_message(
     sender: address,
     recipient: address,
@@ -62,9 +64,10 @@ data2      = 30field
 
 ## 3. Record Construction in the Transition
 
-```rust
+```leo
 return Message {
     owner: recipient,
+    sender: sender,
     msg_id: msg_id,
     data0: data0,
     data1: data1,

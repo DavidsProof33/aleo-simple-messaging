@@ -1,5 +1,11 @@
 program simple_messaging.aleo {
 
+    // No-op constructor (required for deploy in some toolchains).
+    @custom
+    async constructor() {
+        assert_eq(true, true);
+    }
+
     // Simple Message record – for demo purposes.
     // Stores three arbitrary field values.
     record Message {
@@ -34,3 +40,4 @@ program simple_messaging.aleo {
         return msg;
     }
 }
+

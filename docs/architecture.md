@@ -16,8 +16,8 @@ The system consists of two primary components:
 2. **Rust CLI**  
    A lightweight command-line wrapper responsible for:
    - collecting user parameters,
-   - constructing a `leo execute` command,
-   - optionally executing it (with the `--run` flag).
+   - invoking the Leo CLI to execute the `send_message` transition,
+   - optionally running the command directly or preparing it for network execution.
 
 Together, these components demonstrate how an off-chain client can invoke a Leo transition and produce a private on-chain record.
 
@@ -66,7 +66,7 @@ The execution flow is as follows:
 
 4. **The output is displayed**
    - for offline execution, the result is printed locally,
-   - in a networked environment (devnet/testnet), the result could be broadcast as a transaction.
+   - in a networked environment (devnet/testnet), the result can be broadcast as a transaction.
 
 ---
 
@@ -102,7 +102,6 @@ Although intentionally minimal, the project can easily be extended with:
 - timestamps or nonces  
 - additional record fields  
 - record-reading or listing examples  
-- automated devnet/testnet deployment scripts  
 
 ---
 

@@ -4,7 +4,7 @@ leo/*/output/
 **/program.json
 **/proving_key.json
 **/verifying_key.json
-**/records.json
+leo/**/records.json
 
 # Leo cache
 .leo/
@@ -68,4 +68,6 @@ log/
 # === Other noise ===
 node_modules/
 dist/
-build/
+*.exe
+
+

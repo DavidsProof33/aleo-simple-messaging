@@ -62,6 +62,22 @@ Recommended setup:
 
 ---
 
+> ⚠️ **Important – WSL execution required for network usage**
+>
+> While the Rust CLI can be executed natively on Windows, the Leo toolchain
+> should be run **from within WSL (Ubuntu)** using a **WSL-native filesystem**
+> (e.g. `/home/<user>/...`).
+>
+> Running Leo from Windows-mounted paths (such as `/mnt/c/...`) may lead to
+> unstable devnet/testnet behavior. In such cases, transactions can appear
+> to succeed locally (e.g. returning a transaction ID) but never become
+> confirmed on-chain.
+>
+> For reliable results, always place the Leo program under a WSL-native path
+> and invoke Leo from within WSL.
+
+---
+
 ## 🔷 1. Repository Setup (PowerShell)
 
 ```powershell
@@ -74,11 +90,18 @@ cd .\aleo-simple-messaging\
 
 ## 🔷 2. Leo Program
 
-```rust
+```leo
 program simple_messaging.aleo {
 
+    // No-op constructor (required for deploy in some toolchains).
+    @custom
+    async constructor() {
+        assert_eq(true, true);
+    }
+
     record Message {
-        owner: address,
+        owner: address,   // recipient (record owner)
+        sender: address,  // sender address
         msg_id: field,
         data0: field,
         data1: field,
@@ -95,6 +118,7 @@ program simple_messaging.aleo {
     ) -> Message {
         return Message {
             owner: recipient,
+            sender: sender,
             msg_id: msg_id,
             data0: data0,
             data1: data1,
@@ -140,7 +164,7 @@ cargo run -- `
   --data1 20field `
   --data2 30field `
   --private-key "APrivateKey1..." `
-  --network testnet
+  --network 1
 ```
 
 ### Actual Execution (`--run`)
@@ -154,7 +178,7 @@ cargo run -- `
   --data1 20field `
   --data2 30field `
   --private-key "APrivateKey1..." `
-  --network testnet `
+  --network 1 `
   --run
 ```
 
@@ -262,10 +286,52 @@ Our goal is to offer a clean, structured, easy-to-understand example that demons
 
 ---
 
+### 🔷 4. Deploy (devnet / testnet)
+
+> ⚠️ Never commit your private key or view key.
+
+### Known working endpoint (v1)
+- Endpoint: `https://api.explorer.provable.com/v1`
+
+### Deploy (WSL)
+```bash
+cd /mnt/c/aleo-simple-messaging/leo/simple_messaging
+leo build
+
+leo deploy \
+  --private-key "$PRIVATE_KEY" \
+  --network 1 \
+  --endpoint https://api.explorer.provable.com/v1
+```
+
+### Deploy from PowerShell (through WSL)
+```powershell
+cd C:\aleo-simple-messaging
+wsl bash -lc "cd /mnt/c/aleo-simple-messaging/leo/simple_messaging && leo build"
+wsl bash -lc "cd /mnt/c/aleo-simple-messaging/leo/simple_messaging && leo deploy --private-key `"$PRIVATE_KEY`" --network 1 --endpoint https://api.explorer.provable.com/v1"
+```
+
+---
+
+## 🔷 5. Scan private records
+
+```bash
+snarkos developer scan \
+  --view-key "$VIEW_KEY" \
+  --network 1 \
+  --endpoint https://api.explorer.provable.com/v1 \
+  --last 200
+```
+
+Tip: start with a smaller range (e.g. `--last 200`) and increase if needed.
+
+
+---
+
 ## 🔷 Known Issues
 
 - The project is currently tested offline only.  
-- devnet/testnet deployment is not included in the demo.  
+- devnet/testnet deployment is documented but not automated. 
 - Rust CLI uses basic input validation.  
 
 ---

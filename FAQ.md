@@ -41,8 +41,13 @@ The schema can easily be expanded (additional fields, timestamps, nonces, etc.).
 
 ## Does it work on testnet or devnet?
 
-The project has been **tested offline**.  
-While the Leo CLI supports devnet/testnet execution, network deployment is **outside the scope of this demo**.
+Yes.
+
+The project includes documented examples for deploying the Leo program and scanning private records
+on Aleo devnet/testnet using a known working v1 endpoint.
+
+The focus of the demo remains educational and minimal, but on-chain deployment and record scanning
+are supported and documented in `README.md` and `examples/`.
 
 ---
 

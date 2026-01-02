@@ -17,7 +17,7 @@ if (-not $env:LEO_DIR)     { throw "Missing env var: LEO_DIR (WSL path, e.g. /ho
 if (-not $env:NETWORK_ID)    { $env:NETWORK_ID = "testnet" }
 if (-not $env:ENDPOINT_URL)  { $env:ENDPOINT_URL = "https://api.explorer.provable.com/v1" }
 if (-not $env:PRIORITY_FEES) { $env:PRIORITY_FEES = "1000" }
-if (-not $env:BROADCAST)     { $env:BROADCAST = "testnet" }
+if (-not $env:BROADCAST)     { $env:BROADCAST = "1" }
 
 Write-Host "== Aleo Simple Messaging: Deploy ==" -ForegroundColor Cyan
 Write-Host "LEO_DIR       : $env:LEO_DIR"
